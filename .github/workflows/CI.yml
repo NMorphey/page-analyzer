@@ -11,9 +11,6 @@ jobs:
 
       - name: install poerty
         uses: snok/install-poetry@v1
-      
-      - name: install python
-        run: poetry env use python3.11
 
       - name: install dependencies
         run: poetry install
