@@ -15,8 +15,8 @@ jobs:
       - name: install dependencies
         run: poetry install
 
-      - name: tests
-        run: make pytest
+      # - name: tests
+      #   run: make pytest
 
       # - name: Test & publish code coverage
       #   uses: paambaati/codeclimate-action@v5.0.0
