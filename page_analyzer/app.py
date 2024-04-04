@@ -12,6 +12,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
-@app.get('/')
+@app.route('/')
 def main_page():
     return render_template('index.html')
