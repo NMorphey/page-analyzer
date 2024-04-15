@@ -20,11 +20,23 @@
     {% if flash_messages %}
     <section>
         {% for category, message in flash_messages %}
+
         {% if category == 'error' %}
         <div class="alert alert-danger" role="alert">
             {{ message }}
         </div>
         {% endif %}
+        {% if category == 'success' %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
+        {% if category == 'info' %}
+        <div class="alert alert-info" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
+
         {% endfor %}
     </section>
     {% endif %}
