@@ -4,8 +4,14 @@ from flask import Flask, render_template, request, flash, get_flashed_messages
 from dotenv import load_dotenv
 from validators.url import url as validate_url
 from validators import ValidationError
-from urllib.parse import urlparse, urlunparse, urlsplit
+from urllib.parse import urlparse
 from datetime import datetime
+
+
+def normalize_url(url):
+    parsed_url = urlparse(url)
+    return parsed_url._replace(
+        path='', params='', query='', fragment='').geturl()
 
 
 load_dotenv()
@@ -28,7 +34,7 @@ def main_page():
 
 @app.route('/urls', methods=['POST'])
 def add_url():
-    url = request.form.get('url')
+    url = normalize_url(request.form.get('url'))
     if isinstance(validate_url(url), ValidationError):
         flash('Некорректный URL', 'error')
         return render_template(
