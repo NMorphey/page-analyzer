@@ -17,6 +17,17 @@
             </ul>
         </nav>
     </header>
+    {% if flash_messages %}
+    <section>
+        {% for category, message in flash_messages %}
+        {% if category == 'error' %}
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </section>
+    {% endif %}
     <main class="flex-grow-1">
         <div class="container-fluid">
             <div class="row">
@@ -26,7 +37,7 @@
                         <h1 class="display-3">Анализатор страниц</h1>
                         <p class="lead">Бесплатно проверяйте сайты на SEO-пригодность</p>
                         <form class="input-group-lg input-group-prepend control-label d-flex justify-content-center" action="/urls" method="post">
-                            <input class="rounded input-group-text form-control form-control-lg text-start bg-white" type="text" required placeholder="https://www.example.com">
+                            <input class="rounded input-group-text form-control form-control-lg text-start bg-white" type="text" required placeholder="https://www.example.com" name="url" value="{{ input_url }}">
                             <input class="rounded btn btn-primary btn-lg mx-3" type="submit" value="ПРОВЕРИТЬ">
                         </form>
                     </div>
