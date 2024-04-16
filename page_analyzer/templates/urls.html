@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+
+{% block side_column_size %}col-md-1{% endblock %}
+{% block main_column_size %}col-md-10 col-sm-12{% endblock %}
+
+{% block main %}
+<h1 class="mt-3">Сайты</h1>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Имя</th>
+      <th scope="col">Последняя проверка</th>
+      <th scope="col">Код ответа</th>
+    </tr>
+  </thead>
+  {% if urls %}
+  <tbody>
+    {% for id, url, last_check, response_code in urls %}
+    <tr>
+      <td>{{ id }}</td>
+      <td>{{ url }}</td>
+      <td>{{ last_check }}</td>
+      <td>{{ response_code }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  {% endif %}
+</table>
+{% endblock %}
