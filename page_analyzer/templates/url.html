@@ -39,14 +39,14 @@
         </thead>
         {% if checks %}
         <tbody>
-            {% for id, response_code, h1, title, description, created_at %}
+            {% for check_id, response_code, h1, title, description, check_created_at in checks %}
             <tr>
-                <td>{{ id }}</td>
+                <td>{{ check_id }}</td>
                 <td>{{ response_code }}</td>
                 <td>{{ h1 }}</td>
                 <td>{{ title }}</td>
                 <td>{{ description }}</td>
-                <td>{{ created_at }}</td>
+                <td>{{ check_created_at }}</td>
             </tr>
             {% endfor %}
         </tbody>
