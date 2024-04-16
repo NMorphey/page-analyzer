@@ -3,3 +3,12 @@ CREATE TABLE IF NOT EXISTS urls (
     name VARCHAR(255),
     created_at TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS url_checks (
+    id INT,
+    url_id INT,
+    status_code INT,
+    h1 VARCHAR(255),
+    title VARCHAR(255),
+    description TEXT
+);
