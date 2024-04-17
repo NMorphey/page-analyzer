@@ -13,6 +13,7 @@ from validators.url import url as validate_url
 from validators import ValidationError
 from urllib.parse import urlparse
 from datetime import datetime
+import requests
 
 
 def normalize_url(url):
@@ -120,18 +121,24 @@ def url_page(id):
 
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
-    # Проведение самой проверки
     with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            INSERT INTO
-            url_checks (url_id, created_at)
-            VALUES (%s, %s);
-            """,
-            (id, datetime.now())
-        )
-        connection.commit()
-    flash('Страница успешно проверена', 'success')
+        cursor.execute('SELECT name FROM urls WHERE id=%s', (id,))
+        try:
+            response = requests.get(cursor.fetchall()[0][0])
+            response.raise_for_status()
+            cursor.execute(
+                """
+                INSERT INTO
+                url_checks (url_id, created_at, status_code)
+                VALUES (%s, %s, %s);
+                """,
+                (id, datetime.now(), response.status_code)
+            )
+            connection.commit()
+            flash('Страница успешно проверена', 'success')
+        except Exception:
+            flash('Произошла ошибка при проверке', 'error')
+
     return redirect(url_for('url_page', id=id))
 
 
