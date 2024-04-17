@@ -61,7 +61,12 @@ def add_url():
                     (url, datetime.now()))
                 connection.commit()
                 flash('Страница успешно добавлена', 'success')
-        return redirect(url_for('urls_list'))
+            cursor.execute(
+                'SELECT id FROM urls WHERE name = %s',
+                (url,)
+                )
+            id = cursor.fetchone()[0]
+        return redirect(url_for('url_page', id=id))
 
 
 @app.route('/urls')
