@@ -1,6 +1,13 @@
 import os
 import psycopg2
-from flask import Flask, render_template, request, flash, get_flashed_messages
+from flask import (
+    Flask,
+    render_template,
+    request, flash,
+    get_flashed_messages,
+    redirect,
+    url_for
+)
 from dotenv import load_dotenv
 from validators.url import url as validate_url
 from validators import ValidationError
@@ -44,8 +51,93 @@ def add_url():
             )
     else:
         with connection.cursor() as cursor:
-            cursor.execute('INSERT INTO urls (name, created_at) VALUES (%s, %s)',
-                           (url, datetime.now()))
-            connection.commit()
-            cursor.close()
-        return 'success'
+            cursor.execute('SELECT * FROM urls WHERE name=%s', (url,))
+            if cursor.fetchall():
+                flash('Страница уже существует', 'info')
+            else:
+                cursor.execute(
+                    'INSERT INTO urls (name, created_at) VALUES (%s, %s)',
+                    (url, datetime.now()))
+                connection.commit()
+                flash('Страница успешно добавлена', 'success')
+        return redirect(url_for('urls_list'))
+
+
+@app.route('/urls')
+def urls_list():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+                       SELECT
+                       DISTINCT ON (urls.id)
+                           urls.id,
+                           urls.name,
+                           url_checks.created_at,
+                           url_checks.status_code
+                       FROM urls LEFT JOIN url_checks
+                       ON urls.id = url_checks.url_id
+                       ORDER BY urls.id DESC, url_checks.url_id DESC;
+                       """)
+        return render_template(
+            'urls.html',
+            flash_messages=get_flashed_messages(with_categories=True),
+            urls=cursor.fetchall()
+            )
+
+
+@app.route('/urls/<id>')
+def url_page(id):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM urls WHERE id=%s', (id,))
+        response = cursor.fetchall()[0]
+        if not response:
+            return render_template(
+                '404.html',
+                flash_messages=get_flashed_messages(with_categories=True)
+            )
+        id, url, created_at = response
+        cursor.execute("""
+                       SELECT
+                           id,
+                           status_code,
+                           h1,
+                           title,
+                           description,
+                           created_at
+                       FROM url_checks
+                       WHERE url_id = %s
+                       ORDER BY id DESC;
+                       """, (id,))
+        checks = cursor.fetchall()
+        return render_template(
+            'url.html',
+            flash_messages=get_flashed_messages(with_categories=True),
+            id=id,
+            url=url,
+            created_at=created_at,
+            checks=checks
+        )
+
+
+@app.route('/urls/<id>/checks', methods=['POST'])
+def conduct_check(id):
+    # Проведение самой проверки
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO
+            url_checks (url_id, created_at)
+            VALUES (%s, %s);
+            """,
+            (id, datetime.now())
+        )
+        connection.commit()
+    flash('Страница успешно проверена', 'success')
+    return redirect(url_for('url_page', id=id))
+
+
+@app.errorhandler(404)
+def page_404(_):
+    return render_template(
+        '404.html',
+        flash_messages=get_flashed_messages(with_categories=True)
+    )
