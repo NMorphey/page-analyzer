@@ -14,6 +14,7 @@ from validators import ValidationError
 from urllib.parse import urlparse
 from datetime import datetime
 import requests
+from bs4 import BeautifulSoup
 
 
 def normalize_url(url):
@@ -131,13 +132,24 @@ def conduct_check(id):
         try:
             response = requests.get(cursor.fetchall()[0][0])
             response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+            description_tag = soup.find('meta', attrs={'name': 'description'})
             cursor.execute(
                 """
                 INSERT INTO
-                url_checks (url_id, created_at, status_code)
-                VALUES (%s, %s, %s);
+                url_checks (
+                    url_id, created_at, status_code, title, h1, description
+                    )
+                VALUES (%s, %s, %s, %s, %s, %s);
                 """,
-                (id, datetime.now(), response.status_code)
+                (
+                    id,
+                    datetime.now(),
+                    response.status_code,
+                    soup.title.string if soup.title else None,
+                    soup.h1.string if soup.h1 else None,
+                    description_tag['content'] if description_tag else None
+                    )
             )
             connection.commit()
             flash('Страница успешно проверена', 'success')
