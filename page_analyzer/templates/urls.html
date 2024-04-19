@@ -19,7 +19,7 @@
     {% for id, url, last_check, response_code in urls %}
     <tr>
       <td>{{ id }}</td>
-      <td><a href="/urls/{{ id }}">{{ url }}</a></td>
+      <td><a href="{{ url_for('url_page', id=id) }}"">{{ url }}</a></td>
       <td>{{ last_check }}</td>
       <td>{{ response_code }}</td>
     </tr>

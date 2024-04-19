@@ -23,7 +23,7 @@
 </div>
 <div>
     <h2>Проверки</h1>
-    <form class="my-2" method="post" action="/urls/{{ id }}/checks">
+    <form class="my-2" method="post" action="{{ url_for('conduct_check', id=id) }}">
         <input class="rounded btn btn-primary" type="submit" value="Запустить проверку">
     </form>
     <table class="table table-bordered">
