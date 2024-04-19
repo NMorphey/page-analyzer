@@ -6,7 +6,8 @@ from flask import (
     request, flash,
     get_flashed_messages,
     redirect,
-    url_for
+    url_for,
+    abort
 )
 from dotenv import load_dotenv
 from validators.url import url as validate_url
@@ -95,13 +96,10 @@ def urls_list():
 def url_page(id):
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM urls WHERE id=%s', (id,))
-        response = cursor.fetchall()[0]
+        response = cursor.fetchall()
         if not response:
-            return render_template(
-                '404.html',
-                flash_messages=get_flashed_messages(with_categories=True)
-            )
-        id, url, created_at = response
+            abort(404)
+        id, url, created_at = response[0]
         cursor.execute("""
                        SELECT
                            id,
