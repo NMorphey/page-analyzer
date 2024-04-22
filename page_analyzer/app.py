@@ -74,17 +74,17 @@ def add_url():
 @app.route('/urls')
 def urls_list():
     with connection.cursor() as cursor:
-        cursor.execute("""
-                       SELECT
-                       DISTINCT ON (urls.id)
-                           urls.id,
-                           urls.name,
-                           url_checks.created_at,
-                           url_checks.status_code
-                       FROM urls LEFT JOIN url_checks
-                       ON urls.id = url_checks.url_id
-                       ORDER BY urls.id DESC, url_checks.url_id DESC;
-                       """)
+        query = """SELECT
+                   DISTINCT ON (urls.id)
+                       urls.id,
+                       urls.name,
+                       url_checks.created_at,
+                       url_checks.status_code
+                  FROM urls LEFT JOIN url_checks
+                  ON urls.id = url_checks.url_id
+                  ORDER BY urls.id DESC, url_checks.url_id DESC;"""
+        cursor.execute(query)
+
         return render_template(
             'urls.html',
             flash_messages=get_flashed_messages(with_categories=True),
@@ -100,18 +100,19 @@ def url_page(id):
         if not response:
             abort(404)
         id, url, created_at = response[0]
-        cursor.execute("""
-                       SELECT
-                           id,
-                           status_code,
-                           h1,
-                           title,
-                           description,
-                           created_at
-                       FROM url_checks
-                       WHERE url_id = %s
-                       ORDER BY id DESC;
-                       """, (id,))
+
+        query = """SELECT
+                        id,
+                        status_code,
+                        h1,
+                        title,
+                        description,
+                        created_at
+                   FROM url_checks
+                   WHERE url_id = %s
+                   ORDER BY id DESC;"""
+        cursor.execute(query, (id,))
+
         checks = cursor.fetchall()
         return render_template(
             'url.html',
@@ -132,14 +133,14 @@ def conduct_check(id):
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             description_tag = soup.find('meta', attrs={'name': 'description'})
+
+            query = """INSERT INTO
+                       url_checks (
+                       url_id, created_at, status_code, title, h1, description
+                       )
+                       VALUES (%s, %s, %s, %s, %s, %s);"""
             cursor.execute(
-                """
-                INSERT INTO
-                url_checks (
-                    url_id, created_at, status_code, title, h1, description
-                    )
-                VALUES (%s, %s, %s, %s, %s, %s);
-                """,
+                query,
                 (
                     id,
                     datetime.now(),
@@ -149,6 +150,7 @@ def conduct_check(id):
                     description_tag['content'] if description_tag else None
                     )
             )
+
             connection.commit()
             flash('Страница успешно проверена', 'success')
         except Exception:
