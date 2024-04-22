@@ -54,19 +54,26 @@ def add_url():
             )
     else:
         with connection.cursor() as cursor:
-            cursor.execute('SELECT * FROM urls WHERE name=%s;', (url,))
+            query = 'SELECT * FROM urls WHERE name=%s;'
+            cursor.execute(query, (url,))
+
             if cursor.fetchall():
                 flash('Страница уже существует', 'info')
             else:
+                query = 'INSERT INTO urls (name, created_at) VALUES (%s, %s);'
                 cursor.execute(
-                    'INSERT INTO urls (name, created_at) VALUES (%s, %s);',
+                    query,
                     (url, datetime.now()))
+
                 connection.commit()
                 flash('Страница успешно добавлена', 'success')
+
+            query = 'SELECT id FROM urls WHERE name = %s;'
             cursor.execute(
-                'SELECT id FROM urls WHERE name = %s;',
+                query,
                 (url,)
                 )
+
             id = cursor.fetchone()[0]
         return redirect(url_for('url_page', id=id))
 
@@ -95,7 +102,8 @@ def urls_list():
 @app.route('/urls/<id>')
 def url_page(id):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM urls WHERE id=%s;', (id,))
+        query = 'SELECT * FROM urls WHERE id=%s;'
+        cursor.execute(query, (id,))
         response = cursor.fetchall()
         if not response:
             abort(404)
@@ -127,7 +135,8 @@ def url_page(id):
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT name FROM urls WHERE id=%s;', (id,))
+        query = 'SELECT name FROM urls WHERE id=%s;'
+        cursor.execute(query, (id,))
         try:
             response = requests.get(cursor.fetchall()[0][0])
             response.raise_for_status()
