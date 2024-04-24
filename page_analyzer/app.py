@@ -60,7 +60,8 @@ def add_url():
                 if cursor.fetchall():
                     flash('Страница уже существует', 'info')
                 else:
-                    query = 'INSERT INTO urls (name, created_at) VALUES (%s, %s);'
+                    query = """INSERT INTO urls (name, created_at)
+                            VALUES (%s, %s);"""
                     cursor.execute(
                         query,
                         (url, datetime.now()))
