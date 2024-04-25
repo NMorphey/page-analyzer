@@ -38,7 +38,7 @@ def main_page():
         'index.html',
         input_url='',
         flash_messages=get_flashed_messages(with_categories=True)
-        )
+    )
 
 
 @app.route('/urls', methods=['POST'])
@@ -50,7 +50,7 @@ def add_url():
             'index.html',
             input_url=url,
             flash_messages=get_flashed_messages(with_categories=True)
-            ), 422
+        ), 422
     else:
         with psycopg2.connect(database_url) as connection:
             with connection.cursor() as cursor:
@@ -73,7 +73,7 @@ def add_url():
                 cursor.execute(
                     query,
                     (url,)
-                    )
+                )
 
                 id = cursor.fetchone()[0]
         return redirect(url_for('url_page', id=id))
@@ -98,7 +98,7 @@ def urls_list():
                 'urls.html',
                 flash_messages=get_flashed_messages(with_categories=True),
                 urls=cursor.fetchall()
-                )
+            )
 
 
 @app.route('/urls/<id>')
@@ -162,7 +162,7 @@ def conduct_check(id):
                         soup.title.string if soup.title else None,
                         soup.h1.string if soup.h1 else None,
                         description_tag['content'] if description_tag else None
-                        )
+                    )
                 )
 
                 connection.commit()
