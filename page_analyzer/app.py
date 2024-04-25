@@ -50,7 +50,7 @@ def add_url():
             'index.html',
             input_url=url,
             flash_messages=get_flashed_messages(with_categories=True)
-            )
+            ), 422
     else:
         with psycopg2.connect(database_url) as connection:
             with connection.cursor() as cursor:
