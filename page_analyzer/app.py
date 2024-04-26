@@ -1,27 +1,20 @@
 import os
+from dotenv import load_dotenv
+import requests
+
 from flask import (
     Flask,
+    request,
     render_template,
-    request, flash,
+    flash,
     get_flashed_messages,
     redirect,
     url_for,
     abort
 )
-from dotenv import load_dotenv
-from validators.url import url as validate_url
-from validators import ValidationError
-from urllib.parse import urlparse
-import requests
 from bs4 import BeautifulSoup
 
-from page_analyzer import database
-
-
-def normalize_url(url):
-    parsed_url = urlparse(url)
-    return parsed_url._replace(
-        path='', params='', query='', fragment='').geturl()
+from page_analyzer import database, url as url_module
 
 
 load_dotenv()
@@ -42,15 +35,8 @@ def main_page():
 
 @app.route('/urls', methods=['POST'])
 def add_url():
-    url = normalize_url(request.form.get('url'))
-    if isinstance(validate_url(url), ValidationError):
-        flash('Некорректный URL', 'error')
-        return render_template(
-            'index.html',
-            input_url=url,
-            flash_messages=get_flashed_messages(with_categories=True)
-        ), 422
-    else:
+    url = url_module.normalize_url(request.form.get('url'))
+    if url_module.is_url_correct(url):
         if database.is_url_recorded(url):
             flash('Страница уже существует', 'info')
         else:
@@ -58,6 +44,13 @@ def add_url():
             flash('Страница успешно добавлена', 'success')
         id = database.get_url_id(url)
         return redirect(url_for('url_page', id=id))
+    else:
+        flash('Некорректный URL', 'error')
+        return render_template(
+            'index.html',
+            input_url=url,
+            flash_messages=get_flashed_messages(with_categories=True)
+        ), 422
 
 
 @app.route('/urls')
