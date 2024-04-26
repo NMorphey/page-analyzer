@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from validators.url import url as validate_url
 from validators import ValidationError
 from urllib.parse import urlparse
-from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 
@@ -60,11 +59,8 @@ def add_url():
                 if cursor.fetchall():
                     flash('Страница уже существует', 'info')
                 else:
-                    query = """INSERT INTO urls (name, created_at)
-                            VALUES (%s, %s);"""
-                    cursor.execute(
-                        query,
-                        (url, datetime.now()))
+                    query = """INSERT INTO urls (name) VALUES (%s);"""
+                    cursor.execute(query, (url,))
 
                     connection.commit()
                     flash('Страница успешно добавлена', 'success')
@@ -150,14 +146,13 @@ def conduct_check(id):
 
                 query = """INSERT INTO
                         url_checks (
-                        url_id, created_at, status_code, title, h1, description
+                        url_id, status_code, title, h1, description
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s);"""
+                        VALUES (%s, %s, %s, %s, %s);"""
                 cursor.execute(
                     query,
                     (
                         id,
-                        datetime.now(),
                         response.status_code,
                         soup.title.string if soup.title else None,
                         soup.h1.string if soup.h1 else None,
