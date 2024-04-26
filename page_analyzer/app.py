@@ -1,5 +1,4 @@
 import os
-import psycopg2
 from flask import (
     Flask,
     render_template,
@@ -16,6 +15,8 @@ from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 
+from page_analyzer import database
+
 
 def normalize_url(url):
     parsed_url = urlparse(url)
@@ -24,7 +25,6 @@ def normalize_url(url):
 
 
 load_dotenv()
-database_url = os.getenv('DATABASE_URL')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -51,119 +51,59 @@ def add_url():
             flash_messages=get_flashed_messages(with_categories=True)
         ), 422
     else:
-        with psycopg2.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                query = 'SELECT * FROM urls WHERE name=%s;'
-                cursor.execute(query, (url,))
-
-                if cursor.fetchall():
-                    flash('Страница уже существует', 'info')
-                else:
-                    query = """INSERT INTO urls (name) VALUES (%s);"""
-                    cursor.execute(query, (url,))
-
-                    connection.commit()
-                    flash('Страница успешно добавлена', 'success')
-
-                query = 'SELECT id FROM urls WHERE name = %s;'
-                cursor.execute(
-                    query,
-                    (url,)
-                )
-
-                id = cursor.fetchone()[0]
+        if database.is_url_recorded(url):
+            flash('Страница уже существует', 'info')
+        else:
+            database.add_url(url)
+            flash('Страница успешно добавлена', 'success')
+        id = database.get_url_id(url)
         return redirect(url_for('url_page', id=id))
 
 
 @app.route('/urls')
 def urls_list():
-    with psycopg2.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            query = """SELECT
-                    DISTINCT ON (urls.id)
-                        urls.id,
-                        urls.name,
-                        url_checks.created_at,
-                        url_checks.status_code
-                    FROM urls LEFT JOIN url_checks
-                    ON urls.id = url_checks.url_id
-                    ORDER BY urls.id DESC, url_checks.url_id DESC;"""
-            cursor.execute(query)
-
-            return render_template(
-                'urls.html',
-                flash_messages=get_flashed_messages(with_categories=True),
-                urls=cursor.fetchall()
-            )
+    return render_template(
+        'urls.html',
+        flash_messages=get_flashed_messages(with_categories=True),
+        urls=database.get_urls_with_checks()
+    )
 
 
 @app.route('/urls/<id>')
 def url_page(id):
-    with psycopg2.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            query = 'SELECT * FROM urls WHERE id=%s;'
-            cursor.execute(query, (id,))
-            response = cursor.fetchall()
-            if not response:
-                abort(404)
-            id, url, created_at = response[0]
+    response = database.get_url_by_id(id)
+    if not response:
+        abort(404)
+    id, url, created_at = response
 
-            query = """SELECT
-                            id,
-                            status_code,
-                            h1,
-                            title,
-                            description,
-                            created_at
-                    FROM url_checks
-                    WHERE url_id = %s
-                    ORDER BY id DESC;"""
-            cursor.execute(query, (id,))
-
-            checks = cursor.fetchall()
-            return render_template(
-                'url.html',
-                flash_messages=get_flashed_messages(with_categories=True),
-                id=id,
-                url=url,
-                created_at=created_at,
-                checks=checks
-            )
+    return render_template(
+        'url.html',
+        flash_messages=get_flashed_messages(with_categories=True),
+        id=id,
+        url=url,
+        created_at=created_at,
+        checks=database.get_checks(id)
+    )
 
 
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
-    with psycopg2.connect(database_url) as connection:
-        with connection.cursor() as cursor:
-            query = 'SELECT name FROM urls WHERE id=%s;'
-            cursor.execute(query, (id,))
-            try:
-                response = requests.get(cursor.fetchall()[0][0])
-                response.raise_for_status()
-                soup = BeautifulSoup(response.text, 'html.parser')
-                description_tag = soup.find('meta',
-                                            attrs={'name': 'description'})
-
-                query = """INSERT INTO
-                        url_checks (
-                        url_id, status_code, title, h1, description
-                        )
-                        VALUES (%s, %s, %s, %s, %s);"""
-                cursor.execute(
-                    query,
-                    (
-                        id,
-                        response.status_code,
-                        soup.title.string if soup.title else None,
-                        soup.h1.string if soup.h1 else None,
-                        description_tag['content'] if description_tag else None
-                    )
-                )
-
-                connection.commit()
-                flash('Страница успешно проверена', 'success')
-            except Exception:
-                flash('Произошла ошибка при проверке', 'error')
+    try:
+        response = requests.get(database.get_url_by_id(id)[1])
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        description_tag = soup.find('meta',
+                                    attrs={'name': 'description'})
+        database.add_check(
+            id,
+            response.status_code,
+            soup.title.string if soup.title else None,
+            soup.h1.string if soup.h1 else None,
+            description_tag['content'] if description_tag else None
+        )
+        flash('Страница успешно проверена', 'success')
+    except Exception:
+        flash('Произошла ошибка при проверке', 'error')
 
     return redirect(url_for('url_page', id=id))
 
