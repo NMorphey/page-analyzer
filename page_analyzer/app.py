@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-import requests
 
 from flask import (
     Flask,
@@ -12,7 +11,6 @@ from flask import (
     url_for,
     abort
 )
-from bs4 import BeautifulSoup
 
 from page_analyzer import database, url as url_module
 
@@ -82,17 +80,15 @@ def url_page(id):
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     try:
-        response = requests.get(database.get_url_by_id(id)[1])
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        description_tag = soup.find('meta',
-                                    attrs={'name': 'description'})
+        parsing_result = url_module.parse_url(
+            database.get_url_by_id(id)[1]
+        )
         database.add_check(
             id,
-            response.status_code,
-            soup.title.string if soup.title else None,
-            soup.h1.string if soup.h1 else None,
-            description_tag['content'] if description_tag else None
+            parsing_result["status_code"],
+            parsing_result["title"],
+            parsing_result["h1"],
+            parsing_result["description"]
         )
         flash('Страница успешно проверена', 'success')
     except Exception:
