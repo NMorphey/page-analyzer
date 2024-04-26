@@ -20,8 +20,10 @@ def parse_url(url):
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'html.parser')
-    description_tag = soup.find('meta',
-                                attrs={'name': 'description'})
+    description_tag = soup.find(
+        'meta',
+        attrs={'name': 'description'}
+    )
     return {
         "description": description_tag['content'] if description_tag else None,
         "title": soup.title.string if soup.title else None,
