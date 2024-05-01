@@ -20,6 +20,7 @@ from page_analyzer.database import (
     get_url_by_id,
     get_checks,
     add_check,
+    get_url_id
 )
 from page_analyzer.url import normalize_url, is_url_correct, parse_url
 
@@ -43,6 +44,7 @@ def add_url():
     url = normalize_url(request.form.get('url'))
     if is_url_correct(url):
         if is_url_recorded(url):
+            id = get_url_id(url)
             flash('Страница уже существует', 'info')
         else:
             id = add_url_to_db(url)
