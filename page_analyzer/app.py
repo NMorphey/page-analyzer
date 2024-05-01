@@ -12,7 +12,16 @@ from flask import (
     abort
 )
 
-from page_analyzer import database, url as url_module
+from page_analyzer.database import (
+    is_url_recorded,
+    add_url as add_url_to_db,
+    get_url_id,
+    get_urls_with_checks,
+    get_url_by_id,
+    get_checks,
+    add_check,
+)
+from page_analyzer.url import normalize_url, is_url_correct, parse_url
 
 
 load_dotenv()
@@ -34,14 +43,14 @@ def main_page():
 
 @app.route('/urls', methods=['POST'])
 def add_url():
-    url = url_module.normalize_url(request.form.get('url'))
-    if url_module.is_url_correct(url):
-        if database.is_url_recorded(url):
+    url = normalize_url(request.form.get('url'))
+    if is_url_correct(url):
+        if is_url_recorded(url):
             flash('Страница уже существует', 'info')
         else:
-            database.add_url(url)
+            add_url_to_db(url)
             flash('Страница успешно добавлена', 'success')
-        id = database.get_url_id(url)
+        id = get_url_id(url)
         return redirect(url_for('url_page', id=id))
     else:
         flash('Некорректный URL', 'error')
@@ -57,13 +66,13 @@ def urls_list():
     return render_template(
         'urls.html',
         flash_messages=get_flashed_messages(with_categories=True),
-        urls=database.get_urls_with_checks()
+        urls=get_urls_with_checks()
     )
 
 
 @app.route('/urls/<id>')
 def url_page(id):
-    response = database.get_url_by_id(id)
+    response = get_url_by_id(id)
     if not response:
         abort(404)
     id, url, created_at = response
@@ -74,17 +83,17 @@ def url_page(id):
         id=id,
         url=url,
         created_at=created_at,
-        checks=database.get_checks(id)
+        checks=get_checks(id)
     )
 
 
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     try:
-        parsing_result = url_module.parse_url(
-            database.get_url_by_id(id)[1]
+        parsing_result = parse_url(
+            get_url_by_id(id)[1]
         )
-        database.add_check(
+        add_check(
             id,
             parsing_result["status_code"],
             parsing_result["title"],
