@@ -65,7 +65,7 @@ def get_urls_with_checks(cursor):
 
 @use_cursor()
 def get_url_by_id(id, cursor):
-    query = 'SELECT * FROM urls WHERE id=%s;'
+    query = """SELECT * FROM urls WHERE id=%s;"""
     cursor.execute(query, (id,))
     return cursor.fetchone()
 
