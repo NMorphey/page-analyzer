@@ -3,17 +3,22 @@ from dotenv import load_dotenv
 from functools import wraps
 
 import psycopg2
+import psycopg2.extras
 
 
 load_dotenv()
 CONNTECTION = psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
-def use_cursor(changing_data=False):
+def use_cursor(changing_data=False, cursor_type='common'):
+    cursor_params = {
+        'cursor_factory': psycopg2.extras.DictCursor
+    } if cursor_type == 'dict' else {}
+
     def wrapper(function):
         @wraps(function)
         def inner(*args, **kwargs):
-            with CONNTECTION.cursor() as cursor:
+            with CONNTECTION.cursor(**cursor_params) as cursor:
                 result = function(*args, cursor=cursor, **kwargs)
                 if changing_data:
                     CONNTECTION.commit()
@@ -29,18 +34,18 @@ def is_url_recorded(url, cursor):
     return bool(cursor.fetchall())
 
 
-@use_cursor(changing_data=True)
+@use_cursor(changing_data=True, cursor_type='dict')
 def add_url(url, cursor) -> int:
     query = 'INSERT INTO urls (name) VALUES (%s) RETURNING id;'
     cursor.execute(query, (url,))
-    return cursor.fetchone()[0]
+    return cursor.fetchone()['id']
 
 
-@use_cursor()
+@use_cursor(cursor_type='dict')
 def get_url_id(url, cursor):
     query = 'SELECT id FROM urls WHERE name = %s;'
     cursor.execute(query, (url,))
-    return cursor.fetchone()[0]
+    return cursor.fetchone()['id']
 
 
 @use_cursor()
