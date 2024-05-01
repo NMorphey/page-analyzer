@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 
 def normalize_url(url):
     parsed_url = urlparse(url)
-    return parsed_url._replace(
-        path='', params='', query='', fragment='').geturl()
+    return f'{parsed_url.scheme}://{parsed_url.netloc}'
 
 
 def is_url_correct(url):
