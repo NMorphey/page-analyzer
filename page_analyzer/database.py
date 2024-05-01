@@ -7,6 +7,7 @@ import psycopg2.extras
 
 
 load_dotenv()
+database_url = os.getenv('DATABASE_URL')
 
 
 def use_cursor(changing_data=False, cursor_type='common'):
@@ -17,7 +18,7 @@ def use_cursor(changing_data=False, cursor_type='common'):
     def wrapper(function):
         @wraps(function)
         def inner(*args, **kwargs):
-            with psycopg2.connect(os.getenv('DATABASE_URL')) as connection:
+            with psycopg2.connect(database_url) as connection:
                 with connection.cursor(**cursor_params) as cursor:
                     result = function(*args, cursor=cursor, **kwargs)
                     if changing_data:
