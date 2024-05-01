@@ -27,8 +27,6 @@ from page_analyzer.url import normalize_url, is_url_correct, parse_url
 load_dotenv()
 
 app = Flask(__name__)
-# For some reason it stops working if either of 2 lines below removed.
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.secret_key = os.getenv('SECRET_KEY')
 
 
