@@ -17,6 +17,7 @@
             </ul>
         </nav>
     </header>
+    {% with flash_messages = get_flashed_messages(with_categories=True) %}
     {% if flash_messages %}
     <section>
         {% for category, message in flash_messages %}
@@ -40,6 +41,7 @@
         {% endfor %}
     </section>
     {% endif %}
+    {% endwith %}
     <main class="flex-grow-1">
         <div class="container-fluid">
             <div class="row">

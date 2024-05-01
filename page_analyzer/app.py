@@ -8,7 +8,6 @@ from flask import (
     request,
     render_template,
     flash,
-    get_flashed_messages,
     redirect,
     url_for,
     abort
@@ -35,8 +34,7 @@ app.secret_key = os.getenv('SECRET_KEY')
 def main_page():
     return render_template(
         'index.html',
-        input_url='',
-        flash_messages=get_flashed_messages(with_categories=True)
+        input_url=''
     )
 
 
@@ -54,8 +52,7 @@ def add_url():
         flash('Некорректный URL', 'error')
         return render_template(
             'index.html',
-            input_url=url,
-            flash_messages=get_flashed_messages(with_categories=True)
+            input_url=url
         ), 422
 
 
@@ -63,7 +60,6 @@ def add_url():
 def urls_list():
     return render_template(
         'urls.html',
-        flash_messages=get_flashed_messages(with_categories=True),
         urls=get_urls_with_checks()
     )
 
@@ -77,7 +73,6 @@ def url_page(id):
 
     return render_template(
         'url.html',
-        flash_messages=get_flashed_messages(with_categories=True),
         id=id,
         url=url,
         created_at=created_at,
@@ -110,6 +105,5 @@ def conduct_check(id):
 @app.errorhandler(404)
 def page_404(_):
     return render_template(
-        '404.html',
-        flash_messages=get_flashed_messages(with_categories=True)
+        '404.html'
     )
