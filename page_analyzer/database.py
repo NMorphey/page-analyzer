@@ -6,17 +6,16 @@ import psycopg2
 
 
 load_dotenv()
-database_url = os.getenv('DATABASE_URL')
+CONNTECTION = psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
 def use_cursor(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
-        with psycopg2.connect(database_url) as connection:
-            with connection.cursor() as cursor:
-                result = function(*args, cursor=cursor, **kwargs)
-                connection.commit()
-                return result
+        with CONNTECTION.cursor() as cursor:
+            result = function(*args, cursor=cursor, **kwargs)
+            CONNTECTION.commit()
+            return result
     return wrapper
 
 
