@@ -7,10 +7,10 @@ import psycopg2.extras
 
 
 load_dotenv()
-CONNTECTION = psycopg2.connect(os.getenv('DATABASE_URL'))
 
 
 def use_cursor(changing_data=False, cursor_type='common'):
+    connection = psycopg2.connect(os.getenv('DATABASE_URL'))
     cursor_params = {
         'cursor_factory': psycopg2.extras.DictCursor
     } if cursor_type == 'dict' else {}
@@ -18,10 +18,10 @@ def use_cursor(changing_data=False, cursor_type='common'):
     def wrapper(function):
         @wraps(function)
         def inner(*args, **kwargs):
-            with CONNTECTION.cursor(**cursor_params) as cursor:
+            with connection.cursor(**cursor_params) as cursor:
                 result = function(*args, cursor=cursor, **kwargs)
                 if changing_data:
-                    CONNTECTION.commit()
+                    connection.commit()
                 return result
         return inner
     return wrapper
