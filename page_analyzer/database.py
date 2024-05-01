@@ -28,9 +28,10 @@ def is_url_recorded(url, cursor):
 
 
 @use_cursor
-def add_url(url, cursor):
-    query = """INSERT INTO urls (name) VALUES (%s);"""
+def add_url(url, cursor) -> int:
+    query = 'INSERT INTO urls (name) VALUES (%s) RETURNING id;'
     cursor.execute(query, (url,))
+    return cursor.fetchone()[0]
 
 
 @use_cursor
