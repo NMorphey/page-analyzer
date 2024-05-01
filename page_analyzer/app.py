@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import requests
+
 
 from flask import (
     Flask,
@@ -88,12 +90,14 @@ def url_page(id):
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     try:
+        response = requests.get(get_url_by_id(id)[1])
+        response.raise_for_status()
         parsing_result = parse_url(
-            get_url_by_id(id)[1]
+            response.text
         )
         add_check(
             id,
-            parsing_result["status_code"],
+            response.status_code,
             parsing_result["title"],
             parsing_result["h1"],
             parsing_result["description"]
