@@ -18,8 +18,9 @@ from page_analyzer import database, url as url_module
 load_dotenv()
 
 app = Flask(__name__)
+# For some reason it stops working if either of 2 lines below removed.
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.secret_key = "secret_key"
+app.secret_key = os.getenv('SECRET_KEY')
 
 
 @app.route('/')
