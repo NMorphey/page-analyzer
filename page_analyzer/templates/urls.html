@@ -16,12 +16,12 @@
   </thead>
   {% if urls %}
   <tbody>
-    {% for id, url, last_check, response_code in urls %}
+    {% for url in urls %}
     <tr>
-      <td>{{ id }}</td>
-      <td><a href="{{ url_for('url_page', id=id) }}"">{{ url }}</a></td>
-      <td>{% if last_check %}{{ last_check }}{% endif %}</td>
-      <td>{% if response_code %}{{ response_code }}{% endif %}</td>
+      <td>{{ url.id }}</td>
+      <td><a href="{{ url_for('url_page', id=url.id) }}">{{ url.url }}</a></td>
+      <td>{% if url.last_check %}{{ url.last_check }}{% endif %}</td>
+      <td>{% if url.status_code %}{{ url.status_code }}{% endif %}</td>
     </tr>
     {% endfor %}
   </tbody>

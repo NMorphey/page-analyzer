@@ -70,13 +70,12 @@ def url_page(id):
     response = get_url_by_id(id)
     if not response:
         abort(404)
-    id, url, created_at = response
 
     return render_template(
         'url.html',
-        id=id,
-        url=url,
-        created_at=created_at,
+        id=response['id'],
+        url=response['name'],
+        created_at=response['created_at'],
         checks=get_checks(id)
     )
 
@@ -84,7 +83,7 @@ def url_page(id):
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     try:
-        response = requests.get(get_url_by_id(id)[1])
+        response = requests.get(get_url_by_id(id)['name'])
         response.raise_for_status()
         parsing_result = parse_url(
             response.text

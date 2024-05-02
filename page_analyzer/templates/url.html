@@ -39,14 +39,14 @@
         </thead>
         {% if checks %}
         <tbody>
-            {% for check_id, response_code, h1, title, description, check_created_at in checks %}
+            {% for check in checks %}
             <tr>
-                <td>{{ check_id }}</td>
-                <td>{{ response_code }}</td>
-                <td>{% if h1 %}{{ h1 }}{% endif %}</td>
-                <td>{% if title %}{{ title }}{% endif %}</td>
-                <td>{% if description %}{{ description }}{% endif %}</td>
-                <td>{{ check_created_at }}</td>
+                <td>{{ check.id }}</td>
+                <td>{{ check.status_code }}</td>
+                <td>{% if check.h1 %}{{ check.h1 }}{% endif %}</td>
+                <td>{% if check.title %}{{ check.title }}{% endif %}</td>
+                <td>{% if check.description %}{{ check.description }}{% endif %}</td>
+                <td>{{ check.created_at }}</td>
             </tr>
             {% endfor %}
         </tbody>

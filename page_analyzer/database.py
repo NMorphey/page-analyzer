@@ -41,13 +41,13 @@ def get_url_id(url, cursor):
     return cursor.fetchone()['id']
 
 
-@use_cursor()
+@use_cursor(cursor_factory=DictCursor)
 def get_urls_with_checks(cursor):
     query = """SELECT
             DISTINCT ON (urls.id)
                 urls.id,
-                urls.name,
-                url_checks.created_at,
+                urls.name AS url,
+                url_checks.created_at AS last_check,
                 url_checks.status_code
             FROM urls LEFT JOIN url_checks
             ON urls.id = url_checks.url_id
@@ -56,14 +56,14 @@ def get_urls_with_checks(cursor):
     return cursor.fetchall()
 
 
-@use_cursor()
+@use_cursor(cursor_factory=DictCursor)
 def get_url_by_id(id, cursor):
     query = 'SELECT * FROM urls WHERE id=%s;'
     cursor.execute(query, (id,))
     return cursor.fetchone()
 
 
-@use_cursor()
+@use_cursor(cursor_factory=DictCursor)
 def get_checks(id, cursor):
     query = """SELECT
                     id,
