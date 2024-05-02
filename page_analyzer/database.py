@@ -3,23 +3,22 @@ from dotenv import load_dotenv
 from functools import wraps
 
 import psycopg2
-import psycopg2.extras
+from psycopg2.extras import DictCursor
 
 
 load_dotenv()
 database_url = os.getenv('DATABASE_URL')
 
 
-def use_cursor(commit=False, cursor_type='common'):
-    cursor_params = {
-        'cursor_factory': psycopg2.extras.DictCursor
-    } if cursor_type == 'dict' else {}
+def use_cursor(commit=False, cursor_factory=None):
 
     def wrapper(function):
         @wraps(function)
         def inner(*args, **kwargs):
             with psycopg2.connect(database_url) as connection:
-                with connection.cursor(**cursor_params) as cursor:
+                with connection.cursor(
+                    cursor_factory=cursor_factory
+                ) as cursor:
                     result = function(*args, cursor=cursor, **kwargs)
                     if commit:
                         connection.commit()
@@ -28,14 +27,14 @@ def use_cursor(commit=False, cursor_type='common'):
     return wrapper
 
 
-@use_cursor(commit=True, cursor_type='dict')
+@use_cursor(commit=True, cursor_factory=DictCursor)
 def add_url(url, cursor) -> int:
     query = 'INSERT INTO urls (name) VALUES (%s) RETURNING id;'
     cursor.execute(query, (url,))
     return cursor.fetchone()['id']
 
 
-@use_cursor(cursor_type='dict')
+@use_cursor(cursor_factory=DictCursor)
 def get_url_id(url, cursor):
     query = 'SELECT id FROM urls WHERE name = %s;'
     cursor.execute(query, (url,))
