@@ -14,7 +14,6 @@ from flask import (
 )
 
 from page_analyzer.database import (
-    is_url_recorded,
     add_url as add_url_to_db,
     get_urls_with_checks,
     get_url_by_id,
@@ -43,10 +42,10 @@ def main_page():
 def add_url():
     url = normalize_url(request.form.get('url'))
     if is_url_correct(url):
-        if is_url_recorded(url):
+        try:
             id = get_url_id(url)
             flash('Страница уже существует', 'info')
-        else:
+        except Exception:
             id = add_url_to_db(url)
             flash('Страница успешно добавлена', 'success')
         return redirect(url_for('url_page', id=id))

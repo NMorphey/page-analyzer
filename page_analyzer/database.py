@@ -28,13 +28,6 @@ def use_cursor(commit=False, cursor_type='common'):
     return wrapper
 
 
-@use_cursor()
-def is_url_recorded(url, cursor):
-    query = 'SELECT * FROM urls WHERE name=%s;'
-    cursor.execute(query, (url,))
-    return bool(cursor.fetchall())
-
-
 @use_cursor(commit=True, cursor_type='dict')
 def add_url(url, cursor) -> int:
     query = 'INSERT INTO urls (name) VALUES (%s) RETURNING id;'
