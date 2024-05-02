@@ -17,6 +17,7 @@
             </ul>
         </nav>
     </header>
+    {% block flash_messages %}
     {% with flash_messages = get_flashed_messages(with_categories=True) %}
     {% if flash_messages %}
     <section>
@@ -42,6 +43,7 @@
     </section>
     {% endif %}
     {% endwith %}
+    {% endblock %}
     <main class="flex-grow-1">
         <div class="container-fluid">
             <div class="row">
