@@ -67,15 +67,13 @@ def urls_list():
 
 @app.route('/urls/<id>')
 def url_page(id):
-    response = get_url_by_id(id)
-    if not response:
+    url = get_url_by_id(id)
+    if not url:
         abort(404)
 
     return render_template(
         'url.html',
-        id=response['id'],
-        url=response['name'],
-        created_at=response['created_at'],
+        url=url,
         checks=get_checks(id)
     )
 
