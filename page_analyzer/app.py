@@ -81,7 +81,8 @@ def url_page(id):
 @app.route('/urls/<id>/checks', methods=['POST'])
 def conduct_check(id):
     try:
-        response = requests.get(get_url_by_id(id)['name'])
+        url = get_url_by_id(id).get('name')
+        response = requests.get(url)
         response.raise_for_status()
         parsing_result = parse_url(
             response.text
