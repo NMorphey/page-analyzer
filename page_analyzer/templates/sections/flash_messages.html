@@ -1,0 +1,11 @@
+{% with flash_messages = get_flashed_messages(with_categories=True) %}
+{% if flash_messages %}
+<section>
+    {% for category, message in flash_messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+{% endwith %}
