@@ -22,7 +22,7 @@
     {% if flash_messages %}
     <section>
         {% for category, message in flash_messages %}
-        <div class="alert alert-{{'danger' if category == 'error' else category}}">
+        <div class="alert alert-{{ category }}">
             {{ message }}
         </div>
         {% endfor %}

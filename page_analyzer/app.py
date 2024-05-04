@@ -50,7 +50,7 @@ def add_url():
             flash('Страница успешно добавлена', 'success')
         return redirect(url_for('url_page', id=id))
     else:
-        flash('Некорректный URL', 'error')
+        flash('Некорректный URL', 'danger')
         return render_template(
             'index.html',
             input_url=url
@@ -97,7 +97,7 @@ def conduct_check(id):
         )
         flash('Страница успешно проверена', 'success')
     except Exception:
-        flash('Произошла ошибка при проверке', 'error')
+        flash('Произошла ошибка при проверке', 'danger')
 
     return redirect(url_for('url_page', id=id))
 
