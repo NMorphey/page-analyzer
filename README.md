@@ -17,8 +17,7 @@
 #### Required:
 * Python (3.11+)
 * Poetry (1.8+)
-* PostrgeSQL (13+)
-* Git (2.43+)  
+* PostrgeSQL (13+)  
 
 Use `make build` command to configure the environment and install dependencies.  
 Use `make start` command to run server. Whilist runned locally, it can be accessed on `0.0.0.0:8000/`.  
