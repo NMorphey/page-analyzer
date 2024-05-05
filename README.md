@@ -21,5 +21,5 @@
 
 Use `make build` command to configure the environment and install dependencies.  
 Use `make start` command to run server. Whilist runned locally, it can be accessed on `0.0.0.0:8000/`.  
-To run this app, 2 enironment variables must be set: `SECRET_KEY` and `DATABASE_URL`.  
+To run this app, 2 enironment variables must be set: `SECRET_KEY` and `DATABASE_URL`. See .env.sample  
 🔴 **BE AWARE:** All SQL queries are written for PostgreSQL. You may need to slightly change them if you use another DB. 🔴
